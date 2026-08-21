@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: ai-check-in-mcp
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: ORIGIN_API
+        sync: false
+      - key: NTFY_TOPIC
+        sync: false
+      - key: NTFY_SERVER
+        sync: false
