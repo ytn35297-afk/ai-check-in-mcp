@@ -7,7 +7,8 @@ import uvicorn
 
 JST = timedelta(hours=9)
 ORIGIN = os.environ.get("ORIGIN_API", "第二步的Railway域名")
-BARK_KEY = os.environ.get("BARK_API_KEY", "")
+NTFY_SERVER = os.environ.get("NTFY_SERVER", "https://ntfy.sh")
+NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "")
 
 
 def check_on_wife(limit=10):
@@ -26,13 +27,16 @@ def check_on_wife(limit=10):
     return "\n".join(lines)
 
 
-def bark_alert(title="凌止", content=""):
+def ntfy_alert(title="凌止", content=""):
     if not content:
         return "内容不能为空"
-    url = f"https://api.day.app/{BARK_KEY}/{title}/{content}"
+    if not NTFY_TOPIC:
+        return "未配置 NTFY_TOPIC"
+    url = f"{NTFY_SERVER}/{NTFY_TOPIC}"
+    headers = {"Title": title, "Priority": "5"}
     try:
-        r = requests.get(url, timeout=10)
-        return "推送成功" if r.status_code == 200 else "推送失败"
+        r = requests.post(url, data=content.encode("utf-8"), headers=headers, timeout=10)
+        return "推送成功" if r.status_code in (200, 201) else f"推送失败：{r.status_code}"
     except Exception as e:
         return f"推送异常：{e}"
 
@@ -40,13 +44,13 @@ def bark_alert(title="凌止", content=""):
 TOOLS = [
     {"name": "check_on_wife", "description": "查岗老婆的手机活动",
      "inputSchema": {"type": "object", "properties": {"limit": {"type": "integer"}}}},
-    {"name": "bark_alert", "description": "给老婆手机发推送弹窗",
+    {"name": "ntfy_alert", "description": "给老婆手机发 ntfy 推送弹窗",
      "inputSchema": {"type": "object", "properties": {
          "title": {"type": "string"}, "content": {"type": "string"}},
          "required": ["content"]}},
 ]
 
-FUNCS = {"check_on_wife": check_on_wife, "bark_alert": bark_alert}
+FUNCS = {"check_on_wife": check_on_wife, "ntfy_alert": ntfy_alert}
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"],
@@ -62,7 +66,7 @@ async def mcp(req: Request):
         return {"jsonrpc": "2.0", "id": rid,
                 "result": {"protocolVersion": "2024-11-05",
                            "capabilities": {"tools": {}},
-                           "serverInfo": {"name": "查岗MCP", "version": "1.0"}}}
+                           "serverInfo": {"name": "查岗MCP", "version": "1.1"}}}
     if method == "tools/list":
         return {"jsonrpc": "2.0", "id": rid, "result": {"tools": TOOLS}}
     if method == "tools/call":
