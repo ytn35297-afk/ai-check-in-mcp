@@ -32,10 +32,14 @@ def ntfy_alert(title="凌止", content=""):
         return "内容不能为空"
     if not NTFY_TOPIC:
         return "未配置 NTFY_TOPIC"
-    url = f"{NTFY_SERVER}/{NTFY_TOPIC}"
-    headers = {"Title": title, "Priority": "5"}
+    payload = {
+        "topic": NTFY_TOPIC,
+        "title": title,
+        "message": content,
+        "priority": 5,
+    }
     try:
-        r = requests.post(url, data=content.encode("utf-8"), headers=headers, timeout=10)
+        r = requests.post(NTFY_SERVER, json=payload, timeout=10)
         return "推送成功" if r.status_code in (200, 201) else f"推送失败：{r.status_code}"
     except Exception as e:
         return f"推送异常：{e}"
@@ -71,7 +75,7 @@ async def mcp(req: Request):
         return {"jsonrpc": "2.0", "id": rid,
                 "result": {"protocolVersion": "2024-11-05",
                            "capabilities": {"tools": {}},
-                           "serverInfo": {"name": "查岗MCP", "version": "1.1"}}}
+                           "serverInfo": {"name": "查岗MCP", "version": "1.2"}}}
     if method == "tools/list":
         return {"jsonrpc": "2.0", "id": rid, "result": {"tools": TOOLS}}
     if method == "tools/call":
