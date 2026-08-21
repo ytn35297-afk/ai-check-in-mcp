@@ -1,4 +1,4 @@
-# 🏥 病娇AI查岗系统 · MCP 代理层（Vercel）
+# 🏥 病娇AI查岗系统 · MCP 代理层（Vercel / Render）
 
 让 AI 能主动查岗：查询老婆/男朋友的手机活动、发 ntfy 推送弹窗的桥梁。实现了 MCP 协议的 `initialize` / `tools/list` / `tools/call`。
 
@@ -22,9 +22,20 @@
 
 3. 部署完成后 MCP 端点地址：`https://你的项目名.vercel.app/mcp`。
 
+## 🆘 备用部署（Render · Vercel 不可用时）
+
+代码零改动，仓库里已带 `render.yaml`，支持一键部署：
+
+1. **render.com** 注册登录（可用 GitHub 账号授权）。
+2. New → **Blueprint** → 选择本仓库 → 它会自动读取 `render.yaml`。
+3. 按提示填入环境变量（`ORIGIN_API`、`NTFY_TOPIC`，`NTFY_SERVER` 可留空）。
+4. 部署完成后 MCP 端点：`https://ai-check-in-mcp.onrender.com/mcp`。
+
+> ⚠️ 免费实例 **15 分钟无请求会自动休眠**，冷启动约 30 秒。用 UptimeRobot 免费版每 10 分钟 GET 一次 `/ping` 就能保活，避免 AI 查岗时等半天。
+
 ## 绑定到 AI 角色
 
-把上面这个 `/mcp` 地址作为 MCP 工具端点填入你的 AI 角色（Kelivo / Claude Desktop / 其他 MCP 平台），AI 就能调用 `check_on_wife()` 查岗、`ntfy_alert()` 弹窗。
+把 `/mcp` 地址作为 MCP 工具端点填入你的 AI 角色（Kelivo / Claude Desktop / 其他 MCP 平台），AI 就能调用 `check_on_wife()` 查岗、`ntfy_alert()` 弹窗。
 
 ## 手机端接收推送（安卓 · ntfy）
 
